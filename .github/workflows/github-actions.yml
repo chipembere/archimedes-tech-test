@@ -1,0 +1,21 @@
+name: GitHub Actions Demo
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Test
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      - run: |
+          pip install -U pip
+          pip install poetry
+          poetry install
+          make test
+        env:
+          POETRY_VIRTUALENVS_CREATE: false
+      - run: echo "🍏 This job's status is ${{ job.status }}."
