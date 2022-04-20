@@ -47,15 +47,25 @@ operator_data = {
 
 
 @pytest.fixture(scope="function")
+def mock_call_data():
+    return call_data
+
+
+@pytest.fixture(scope="function")
+def mock_operator_data():
+    return operator_data
+
+
+@pytest.fixture(scope="function")
 def mock_json_files(tmp_path):
     temp_dir = tmp_path / "sub"
     temp_dir.mkdir()
     os.chdir(temp_dir)
     test_calls_file = temp_dir / "test_calls.json"
-    with open('test_calls.json', 'w') as outfile:
+    with open("test_calls.json", "w") as outfile:
         json.dump(call_data, outfile)
 
     test_operator_file = temp_dir / "test_operator.json"
-    with open('test_operator.json', 'w') as outfile:
+    with open("test_operator.json", "w") as outfile:
         json.dump(call_data, outfile)
     yield str(test_calls_file), call_data, str(test_operator_file), operator_data

@@ -2,6 +2,7 @@ import pytest
 
 from src import main
 
+
 def test_load_json(mock_json_files):
     """open and load json data
     Parameters:
@@ -12,19 +13,18 @@ def test_load_json(mock_json_files):
     test_calls_file, call_data, test_operator_file, operator_data = mock_json_files
     operator_data == main.load_json(test_calls_file)
 
+
 def test_load_json_file_not_found():
     with pytest.raises(FileNotFoundError):
-       main.load_json("test_calls_file")
-    
+        main.load_json("test_calls_file")
 
-def test_split_number():
-    """split phone number and return the fragments
-    Parameters:
-        phone_number (str): phone in number as a string.
-    Returns:
-        (tuple): the parts of number as tuple
-    """
-    pass
+
+def test_split_number(mock_call_data):
+    phone_number = mock_call_data["data"][0]["attributes"]["number"]
+    country_code, range_prefix, number = main.split_number(phone_number=phone_number)
+    assert country_code == "+44"
+    assert range_prefix == "1234"
+    assert number == "56789"
 
 
 def test_find_operator():
