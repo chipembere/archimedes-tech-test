@@ -1,3 +1,22 @@
+import pytest
+
+from src import main
+
+def test_load_json(mock_json_files):
+    """open and load json data
+    Parameters:
+        file_path (str): path to json file
+    Returns:
+        dict: the json string is converted into a dictionary
+    """
+    test_calls_file, call_data, test_operator_file, operator_data = mock_json_files
+    operator_data == main.load_json(test_calls_file)
+
+def test_load_json_file_not_found():
+    with pytest.raises(FileNotFoundError):
+       main.load_json("test_calls_file")
+    
+
 def test_split_number():
     """split phone number and return the fragments
     Parameters:
