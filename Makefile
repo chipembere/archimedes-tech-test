@@ -3,3 +3,6 @@ format:
 
 test:
 	poetry run pytest
+
+main:
+	poetry run python src/main.py

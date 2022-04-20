@@ -2,6 +2,8 @@ import os
 import json
 import errno
 import decimal
+import pandas as pd
+import datetime as dt
 
 
 def load_json(file_path: str) -> dict:
@@ -48,11 +50,13 @@ def find_operator(range_prefix: str, operators: list) -> str:
         'Unknowm' (str): if operator is not found
     """
     try:
-        for operator in operators["data"]:
-            if operator["attributes"]["prefix"][0] == range_prefix[0]:
-                return operator["attributes"]["operator"]
-            else:
-                return "Unknown"
+        operators_list = operators.get("data")
+        if len(operators_list) > 0:
+            r = 0
+            for operator in operators_list:
+                if operator["attributes"]["prefix"][0] == range_prefix[0]:
+                    return operator["attributes"]["operator"]
+        return "Unknown"
 
     except Exception as e:
         print(e)
@@ -82,7 +86,48 @@ def generate_risk_score(risk_score: float, green_list: bool, red_list: bool):
                 decimal.Decimal("1.0"), rounding=decimal.ROUND_HALF_EVEN
             )
         )
-    # if a call is on a red list only its risk score is 1.0
-    # if the call is on the green list only == 0.0
-    # if call not on either red or green list;
-    # round everything from half up to 1 decimal point and all values below half are round down
+
+
+if __name__ == "__main__":
+    calls_data_path = "data/calls.json"
+    operators_data_path = "data/operators.json"
+
+    calls_data = load_json(file_path=calls_data_path)
+    operators_data = load_json(file_path=operators_data_path)
+
+    enriched_calls: list = []
+    for call in calls_data["data"]:
+        enriched_call: dict = {}
+        id = call.get("id")
+        phone_number = (
+            "Withheld"
+            if not call.get("attributes").get("number")
+            else call.get("attributes").get("number")
+        )
+        risk_score = call.get("attributes").get("riskScore")
+        green_list = call.get("attributes").get("greenList")
+        red_list = call.get("attributes").get("redList")
+        country_code, range_prefix, number = split_number(phone_number=phone_number)
+        operator = (
+            "Unknown"
+            if phone_number == "Withheld"
+            else find_operator(range_prefix=range_prefix, operators=operators_data)
+        )
+        risk_score = generate_risk_score(
+            risk_score=risk_score, green_list=green_list, red_list=red_list
+        )
+        date = dt.datetime.strptime(
+            call.get("attributes").get("date"), "%Y-%m-%dT%H:%M:%SZ"
+        ).date()
+        enriched_call["id"] = id
+        enriched_call["date"] = date
+        enriched_call["number"] = phone_number
+        enriched_call["operator"] = operator
+        enriched_call["riskScore"] = risk_score
+        enriched_calls.append(enriched_call)
+
+    df = pd.DataFrame(enriched_calls)
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.sort_values(by="date", ascending=True)
+    print(df)
+    df.to_csv("data/enriched_calls.csv")

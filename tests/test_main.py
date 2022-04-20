@@ -1,5 +1,3 @@
-from ast import operator
-from pickle import TRUE
 import pytest
 
 from src import main
@@ -71,8 +69,3 @@ def test_generate_risk_score_red_list():
         risk_score=0.41, green_list=False, red_list=True
     )
     assert risk_score == 1.0
-
-
-def test_generate_csv():
-    """end to end to test"""
-    pass
