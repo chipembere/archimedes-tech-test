@@ -1,3 +1,4 @@
+from ast import operator
 import pytest
 
 from src import main
@@ -27,17 +28,20 @@ def test_split_number(mock_call_data):
     assert number == "56789"
 
 
-def test_find_operator():
-    """using the range prefix find the operator of a number
-    from a list of operators in dictionary.
+def test_find_operator(
+    mock_operator_data,
+):
+    """test find operator"""
+    operator = main.find_operator(range_prefix="1234", operators=mock_operator_data)
+    assert operator == "Vodafone"
 
-    Parameters:
-        range_prefix (str): range prefix from phone number
-    Return:
-        operator (str): the name of the operator if found
-        'unknowm' (str): if operator is not found
-    """
-    pass
+
+def test_find_operator_unknown(
+    mock_operator_data,
+):
+    """test unknown operator"""
+    operator = main.find_operator(range_prefix="8234", operators=mock_operator_data)
+    assert operator == "Unknown"
 
 
 def test_generate_risk_score():

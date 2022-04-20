@@ -33,3 +33,25 @@ def split_number(phone_number: str) -> tuple:
         return country_code, range_prefix, number
     except Exception as e:
         print(e)
+
+
+def find_operator(range_prefix: str, operators: list) -> str:
+    """using the range prefix find the operator of a number
+    from a list of operators dictionaries.
+
+    Parameters:
+        range_prefix (str): range prefix from phone number
+        operators (list): list of operators dictionaries
+    Return:
+        operator (str): the name of the operator if found
+        'Unknowm' (str): if operator is not found
+    """
+    try:
+        for operator in operators["data"]:
+            if operator["attributes"]["prefix"][0] == range_prefix[0]:
+                return operator["attributes"]["operator"]
+            else:
+                return "Unknown"
+
+    except Exception as e:
+        print(e)
