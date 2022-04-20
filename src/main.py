@@ -1,6 +1,7 @@
 import os
 import json
 import errno
+import decimal
 
 
 def load_json(file_path: str) -> dict:
@@ -55,3 +56,33 @@ def find_operator(range_prefix: str, operators: list) -> str:
 
     except Exception as e:
         print(e)
+
+
+def generate_risk_score(risk_score: float, green_list: bool, red_list: bool):
+    """Generate a risk score, depending on wether a call is on the red or green list
+    and rounding the original riskScore value if the call is not on either list.
+
+    Parameters:
+        risk_score (float): call risk score
+        green_list (bool): if call is on the green list
+        red_list (bool): if call is on the red list
+    Returns:
+        risk_score (float): a revised risk score
+    """
+    # being on the green list has precedence over red list, meaning if a call is on both lists its == 0.0
+    if green_list:
+        return 0.0
+    elif red_list:
+        return 1.0
+    elif red_list and not green_list:
+        return 1.0
+    else:
+        return float(
+            decimal.Decimal(str(risk_score)).quantize(
+                decimal.Decimal("1.0"), rounding=decimal.ROUND_HALF_EVEN
+            )
+        )
+    # if a call is on a red list only its risk score is 1.0
+    # if the call is on the green list only == 0.0
+    # if call not on either red or green list;
+    # round everything from half up to 1 decimal point and all values below half are round down

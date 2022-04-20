@@ -1,17 +1,13 @@
 from ast import operator
+from pickle import TRUE
 import pytest
 
 from src import main
 
 
 def test_load_json(mock_json_files):
-    """open and load json data
-    Parameters:
-        file_path (str): path to json file
-    Returns:
-        dict: the json string is converted into a dictionary
-    """
-    test_calls_file, call_data, test_operator_file, operator_data = mock_json_files
+    """test loading json"""
+    test_calls_file, _, _, operator_data = mock_json_files
     operator_data == main.load_json(test_calls_file)
 
 
@@ -21,6 +17,7 @@ def test_load_json_file_not_found():
 
 
 def test_split_number(mock_call_data):
+    """test splitting phone number"""
     phone_number = mock_call_data["data"][0]["attributes"]["number"]
     country_code, range_prefix, number = main.split_number(phone_number=phone_number)
     assert country_code == "+44"
@@ -44,23 +41,36 @@ def test_find_operator_unknown(
     assert operator == "Unknown"
 
 
-def test_generate_risk_score():
-    """Generate a risk score, depending on wether a call is on the red or green list
-    and rounding the original riskScore value if the call is not on either list.
+def test_generate_risk_score_rounding_up():
+    """test risk score generation rounding up"""
+    risk_score = main.generate_risk_score(
+        risk_score=0.55, green_list=False, red_list=False
+    )
+    assert risk_score == 0.6
 
-    Parameters:
-        risk_score (float): call risk score
-        green_list (bool): if call is on the green list
-        red_list (bool): if call is on the red list
-    Returns:
-        risk_score (float): a revised risk score
-    """
-    # being on the green list has precedence over red list, meaning if a call is on both lists its == 0
-    # if a call is on a red list only its risk score is 1.0
-    # if the call is on the green list only == 0.0
-    # if call not on either red or green list;
-    # roundd everything from half up to 1 decimal point and all values below half are round down
-    pass
+
+def test_generate_risk_score_rounding_down():
+    """test risk score generation rounding down"""
+    risk_score = main.generate_risk_score(
+        risk_score=0.41, green_list=False, red_list=False
+    )
+    assert risk_score == 0.4
+
+
+def test_generate_risk_score_green_list():
+    """test risk score generation for a call on the green list and red list"""
+    risk_score = main.generate_risk_score(
+        risk_score=0.41, green_list=True, red_list=True
+    )
+    assert risk_score == 0.0
+
+
+def test_generate_risk_score_red_list():
+    """test risk score generation for a call on the red list"""
+    risk_score = main.generate_risk_score(
+        risk_score=0.41, green_list=False, red_list=True
+    )
+    assert risk_score == 1.0
 
 
 def test_generate_csv():
